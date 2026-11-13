@@ -1080,6 +1080,9 @@ public enum Talent {
 
 		//tier 3
 		switch (cls){
+			case SUPER_SAIYAJIN: case OOZARU:
+				//las transformaciones saiyajin no tienen talentos de nivel 3
+				break;
 			case BERSERKER: default:
 				Collections.addAll(tierTalents, ENDLESS_RAGE, DEATHLESS_FURY, ENRAGED_CATALYST);
 				break;

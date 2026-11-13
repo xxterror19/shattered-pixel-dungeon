@@ -93,9 +93,9 @@ public enum HeroClass {
 	DUELIST( HeroSubClass.CHAMPION, HeroSubClass.MONK ),
 	CLERIC( HeroSubClass.PRIEST, HeroSubClass.PALADIN ),
 	//personajes extra: reutilizan el arbol de talentos, subclases y habilidades de su clase base
-	GOKU( HeroSubClass.BERSERKER, HeroSubClass.GLADIATOR ),
-	VEGETA( HeroSubClass.CHAMPION, HeroSubClass.MONK ),
-	GOHAN( HeroSubClass.BATTLEMAGE, HeroSubClass.WARLOCK );
+	GOKU( HeroSubClass.SUPER_SAIYAJIN, HeroSubClass.OOZARU ),
+	VEGETA( HeroSubClass.SUPER_SAIYAJIN, HeroSubClass.OOZARU ),
+	GOHAN( HeroSubClass.SUPER_SAIYAJIN, HeroSubClass.OOZARU );
 
 	private HeroSubClass[] subClasses;
 

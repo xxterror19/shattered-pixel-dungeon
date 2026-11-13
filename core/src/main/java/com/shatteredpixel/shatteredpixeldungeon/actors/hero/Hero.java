@@ -704,6 +704,13 @@ public class Hero extends Char {
 			dmg = Math.round(dmg * 1.5f);
 		}
 
+		//Super Saiyajin: +30% de dano. Oozaru: +20% de dano
+		if (subClass == HeroSubClass.SUPER_SAIYAJIN){
+			dmg = Math.round(dmg * 1.3f);
+		} else if (subClass == HeroSubClass.OOZARU){
+			dmg = Math.round(dmg * 1.2f);
+		}
+
 		if (dmg < 0) dmg = 0;
 		return dmg;
 	}
@@ -1652,6 +1659,10 @@ public class Hero extends Char {
 		//Gohan - Poder Oculto: recibe 20% menos dano
 		if (heroClass == HeroClass.GOHAN){
 			dmg = Math.round(dmg * 0.8f);
+		}
+		//Oozaru: piel de mono gigante, recibe 15% menos dano
+		if (subClass == HeroSubClass.OOZARU){
+			dmg = Math.round(dmg * 0.85f);
 		}
 
 		//temporarily assign to a float to avoid rounding a bunch

@@ -48,7 +48,11 @@ public enum HeroSubClass {
 	MONK(HeroIcon.MONK),
 
 	PRIEST(HeroIcon.PRIEST),
-	PALADIN(HeroIcon.PALADIN);
+	PALADIN(HeroIcon.PALADIN),
+
+	//transformaciones de Goku, Vegeta y Gohan
+	SUPER_SAIYAJIN(HeroIcon.BERSERKER),
+	OOZARU(HeroIcon.GLADIATOR);
 
 	int icon;
 
