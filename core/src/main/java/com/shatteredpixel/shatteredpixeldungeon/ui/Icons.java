@@ -461,7 +461,7 @@ public enum Icons {
 	}
 	
 	public static Image get( HeroClass cl ) {
-		switch (cl) {
+		switch (cl.base()) {
 			case WARRIOR:
 				return new ItemSprite(ItemSpriteSheet.SEAL);
 			case MAGE:

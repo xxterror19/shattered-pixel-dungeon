@@ -169,7 +169,7 @@ public class GuidingLight extends TargetedClericSpell {
 
 			if (Dungeon.hero.subClass == HeroSubClass.PRIEST){
 				desc += "\n\n" + Messages.get(this, "desc_priest");
-			} else if (Dungeon.hero.heroClass != HeroClass.CLERIC){
+			} else if (Dungeon.hero.heroClass.base() != HeroClass.CLERIC){
 				desc += "\n\n" + Messages.get(this, "desc_generic");
 			}
 

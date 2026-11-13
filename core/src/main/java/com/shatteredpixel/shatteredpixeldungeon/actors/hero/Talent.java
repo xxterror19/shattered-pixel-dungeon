@@ -450,7 +450,7 @@ public enum Talent {
 				return 218;
 			}
 			HeroClass cls = Dungeon.hero != null ? Dungeon.hero.heroClass : GamesInProgress.selectedClass;
-			switch (cls){
+			switch (cls.base()){
 				case WARRIOR: default:
 					return 26;
 				case MAGE:
@@ -496,7 +496,7 @@ public enum Talent {
 
 	public static void onTalentUpgraded( Hero hero, Talent talent ){
 		//for metamorphosis
-		if (talent == IRON_WILL && hero.heroClass != HeroClass.WARRIOR){
+		if (talent == IRON_WILL && hero.heroClass.base() != HeroClass.WARRIOR){
 			Buff.affect(hero, BrokenSeal.WarriorShield.class);
 		}
 
@@ -535,7 +535,7 @@ public enum Talent {
 			Buff.affect(hero, Talent.ProtectiveShadowsTracker.class);
 		}
 
-		if (talent == LIGHT_CLOAK && hero.heroClass == HeroClass.ROGUE){
+		if (talent == LIGHT_CLOAK && hero.heroClass.base() == HeroClass.ROGUE){
 			for (Item item : Dungeon.hero.belongings.backpack){
 				if (item instanceof CloakOfShadows){
 					if (!hero.belongings.lostInventory() || item.keptThroughLostInventory()) {
@@ -565,7 +565,7 @@ public enum Talent {
 			}
 		}
 
-		if (talent == LIGHT_READING && hero.heroClass == HeroClass.CLERIC){
+		if (talent == LIGHT_READING && hero.heroClass.base() == HeroClass.CLERIC){
 			for (Item item : Dungeon.hero.belongings.backpack){
 				if (item instanceof HolyTome){
 					if (!hero.belongings.lostInventory() || item.keptThroughLostInventory()) {
@@ -623,7 +623,7 @@ public enum Talent {
 			Buff.affect( hero, PhysicalEmpower.class).set(3, 1 + hero.pointsInTalent(STRENGTHENING_MEAL));
 		}
 		if (hero.hasTalent(FOCUSED_MEAL)){
-			if (hero.heroClass == HeroClass.DUELIST){
+			if (hero.heroClass.base() == HeroClass.DUELIST){
 				//0.67/1 charge for the duelist
 				Buff.affect( hero, MeleeWeapon.Charger.class ).gainCharge((hero.pointsInTalent(FOCUSED_MEAL)+1)/3f);
 				ScrollOfRecharging.charge( hero );
@@ -633,7 +633,7 @@ public enum Talent {
 			}
 		}
 		if (hero.hasTalent(SATIATED_SPELLS)){
-			if (hero.heroClass == HeroClass.CLERIC) {
+			if (hero.heroClass.base() == HeroClass.CLERIC) {
 				Buff.affect(hero, SatiatedSpellsTracker.class);
 			} else {
 				//3/5 shielding, delayed up to 10 turns
@@ -646,7 +646,7 @@ public enum Talent {
 			}
 		}
 		if (hero.hasTalent(ENLIGHTENING_MEAL)){
-			if (hero.heroClass == HeroClass.CLERIC) {
+			if (hero.heroClass.base() == HeroClass.CLERIC) {
 				HolyTome tome = hero.belongings.getItem(HolyTome.class);
 				if (tome != null) {
 					// 2/3 of a charge at +1, 1 full charge at +2
@@ -770,7 +770,7 @@ public enum Talent {
 			Sample.INSTANCE.play( Assets.Sounds.MELD );
 		}
 		if (hero.hasTalent(RECALL_INSCRIPTION) && Scroll.class.isAssignableFrom(cls) && cls != ScrollOfUpgrade.class){
-			if (hero.heroClass == HeroClass.CLERIC){
+			if (hero.heroClass.base() == HeroClass.CLERIC){
 				Buff.prolong(hero, RecallInscription.UsedItemTracker.class, hero.pointsInTalent(RECALL_INSCRIPTION) == 2 ? 300 : 10).item = cls;
 			} else {
 				// 10/15%
@@ -784,7 +784,7 @@ public enum Talent {
 
 	public static void onRunestoneUsed( Hero hero, int pos, Class<?extends Item> cls ){
 		if (hero.hasTalent(RECALL_INSCRIPTION) && Runestone.class.isAssignableFrom(cls)){
-			if (hero.heroClass == HeroClass.CLERIC){
+			if (hero.heroClass.base() == HeroClass.CLERIC){
 				Buff.prolong(hero, RecallInscription.UsedItemTracker.class, hero.pointsInTalent(RECALL_INSCRIPTION) == 2 ? 300 : 10).item = cls;
 			} else {
 
@@ -806,13 +806,13 @@ public enum Talent {
 			Buff.prolong(hero, EnhancedRings.class, 3f*hero.pointsInTalent(ENHANCED_RINGS));
 		}
 
-		if (Dungeon.hero.heroClass != HeroClass.CLERIC
+		if (Dungeon.hero.heroClass.base() != HeroClass.CLERIC
 				&& Dungeon.hero.hasTalent(Talent.DIVINE_SENSE)){
 			Buff.prolong(Dungeon.hero, DivineSense.DivineSenseTracker.class, Dungeon.hero.cooldown()+1);
 		}
 
 		// 10/20/30%
-		if (Dungeon.hero.heroClass != HeroClass.CLERIC
+		if (Dungeon.hero.heroClass.base() != HeroClass.CLERIC
 				&& Dungeon.hero.hasTalent(Talent.CLEANSE)
 				&& Random.Int(10) < Dungeon.hero.pointsInTalent(Talent.CLEANSE)){
 			boolean removed = false;
@@ -975,7 +975,7 @@ public enum Talent {
 		ArrayList<Talent> tierTalents = new ArrayList<>();
 
 		//tier 1
-		switch (cls){
+		switch (cls.base()){
 			case WARRIOR: default:
 				Collections.addAll(tierTalents, HEARTY_MEAL, VETERANS_INTUITION, PROVOKED_ANGER, IRON_WILL);
 				break;
@@ -1004,7 +1004,7 @@ public enum Talent {
 		tierTalents.clear();
 
 		//tier 2
-		switch (cls){
+		switch (cls.base()){
 			case WARRIOR: default:
 				Collections.addAll(tierTalents, IRON_STOMACH, LIQUID_WILLPOWER, RUNIC_TRANSFERENCE, LETHAL_MOMENTUM, IMPROVISED_PROJECTILES);
 				break;
@@ -1033,7 +1033,7 @@ public enum Talent {
 		tierTalents.clear();
 
 		//tier 3
-		switch (cls){
+		switch (cls.base()){
 			case WARRIOR: default:
 				Collections.addAll(tierTalents, HOLD_FAST, STRONGMAN);
 				break;

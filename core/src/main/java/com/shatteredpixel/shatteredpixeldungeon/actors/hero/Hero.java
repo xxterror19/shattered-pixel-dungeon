@@ -487,7 +487,7 @@ public class Hero extends Char {
 			Buff.affect( this, Combo.class ).hit( enemy );
 		}
 
-		if (hit && heroClass == HeroClass.DUELIST && wasEnemy){
+		if (hit && heroClass.base() == HeroClass.DUELIST && wasEnemy){
 			Buff.affect( this, Sai.ComboStrikeTracker.class).addHit( attackTarget );
 		}
 
@@ -523,7 +523,7 @@ public class Hero extends Char {
 					&& belongings.abilityWeapon != wep && buff(MonkEnergy.MonkAbility.UnarmedAbilityTracker.class) == null){
 
 				//non-duelist benefit for precise assault, can stack with liquid agility
-				if (heroClass != HeroClass.DUELIST) {
+				if (heroClass.base() != HeroClass.DUELIST) {
 					//persistent +10%/20%/30% ACC for other heroes
 					accuracy *= 1f + 0.1f * pointsInTalent(Talent.PRECISE_ASSAULT);
 				}
@@ -693,10 +693,15 @@ public class Hero extends Char {
 			Sample.INSTANCE.play(Assets.Sounds.HIT_STRONG, 0.75f, 1.2f);
 		}
 
-		if (heroClass != HeroClass.DUELIST
+		if (heroClass.base() != HeroClass.DUELIST
 				&& hasTalent(Talent.WEAPON_RECHARGING)
 				&& (buff(Recharging.class) != null || buff(ArtifactRecharge.class) != null)){
 			dmg = Math.round(dmg * (1.025f + .025f*pointsInTalent(Talent.WEAPON_RECHARGING)));
+		}
+
+		//Goku - Super Saiyajin: con poca vida pega 50% mas fuerte
+		if (heroClass == HeroClass.GOKU && HP * 10 <= HT * 3){
+			dmg = Math.round(dmg * 1.5f);
 		}
 
 		if (dmg < 0) dmg = 0;
@@ -1008,7 +1013,7 @@ public class Hero extends Char {
 				//standing in high grass
 				(Dungeon.level.map[pos] == Terrain.HIGH_GRASS ||
 				//standing in furrowed grass and not huntress
-				(heroClass != HeroClass.HUNTRESS && Dungeon.level.map[pos] == Terrain.FURROWED_GRASS) ||
+				(heroClass.base() != HeroClass.HUNTRESS && Dungeon.level.map[pos] == Terrain.FURROWED_GRASS) ||
 				//standing on a plant
 				Dungeon.level.plants.get(pos) != null);
 	}
@@ -1469,7 +1474,7 @@ public class Hero extends Char {
 
 		if (attackTarget.isAlive() && canAttack(attackTarget) && attackTarget.invisible == 0) {
 
-			if (heroClass != HeroClass.DUELIST
+			if (heroClass.base() != HeroClass.DUELIST
 					&& hasTalent(Talent.AGGRESSIVE_BARRIER)
 					&& buff(Talent.AggressiveBarrierCooldown.class) == null
 					&& (HP / (float)HT) <= 0.5f){
@@ -1507,7 +1512,7 @@ public class Hero extends Char {
 	public void rest( boolean fullRest ) {
 		spendAndNextConstant( TIME_TO_REST );
 		if (hasTalent(Talent.HOLD_FAST)){
-			if (heroClass != HeroClass.WARRIOR || buff(BrokenSeal.WarriorShield.class) != null) {
+			if (heroClass.base() != HeroClass.WARRIOR || buff(BrokenSeal.WarriorShield.class) != null) {
 				Buff.affect(this, HoldFast.class).pos = pos;
 			}
 		}
@@ -1642,6 +1647,11 @@ public class Hero extends Char {
 		if (this.buff(Drowsy.class) != null){
 			Buff.detach(this, Drowsy.class);
 			GLog.w( Messages.get(this, "pain_resist") );
+		}
+
+		//Gohan - Poder Oculto: recibe 20% menos dano
+		if (heroClass == HeroClass.GOHAN){
+			dmg = Math.round(dmg * 0.8f);
 		}
 
 		//temporarily assign to a float to avoid rounding a bunch
@@ -2374,7 +2384,7 @@ public class Hero extends Char {
 			Buff.affect( this, Combo.class ).hit(attackTarget);
 		}
 
-		if (hit && heroClass == HeroClass.DUELIST && wasEnemy){
+		if (hit && heroClass.base() == HeroClass.DUELIST && wasEnemy){
 			Buff.affect( this, Sai.ComboStrikeTracker.class).addHit( attackTarget );
 		}
 
@@ -2496,7 +2506,7 @@ public class Hero extends Char {
 		boolean smthFound = false;
 
 		boolean circular = pointsInTalent(Talent.WIDE_SEARCH) == 1;
-		int distance = heroClass == HeroClass.ROGUE ? 2 : 1;
+		int distance = heroClass.base() == HeroClass.ROGUE ? 2 : 1;
 		if (hasTalent(Talent.WIDE_SEARCH)) distance++;
 		
 		boolean foresight = buff(Foresight.class) != null;

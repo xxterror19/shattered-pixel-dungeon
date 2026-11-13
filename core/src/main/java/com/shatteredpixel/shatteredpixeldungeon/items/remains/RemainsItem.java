@@ -79,7 +79,7 @@ public abstract class RemainsItem extends Item {
 	}
 
 	public static RemainsItem get(HeroClass cls){
-		switch (cls){
+		switch (cls.base()){
 			case WARRIOR: default:
 				return new SealShard();
 			case MAGE:

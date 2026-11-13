@@ -67,12 +67,14 @@ import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfMirrorImag
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRage;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRemoveCurse;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfLightning;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfMagicMissile;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Cudgel;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Dagger;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gloves;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MagesStaff;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Quarterstaff;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Rapier;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WornShortsword;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ThrowingKnife;
@@ -89,12 +91,26 @@ public enum HeroClass {
 	ROGUE( HeroSubClass.ASSASSIN, HeroSubClass.FREERUNNER ),
 	HUNTRESS( HeroSubClass.SNIPER, HeroSubClass.WARDEN ),
 	DUELIST( HeroSubClass.CHAMPION, HeroSubClass.MONK ),
-	CLERIC( HeroSubClass.PRIEST, HeroSubClass.PALADIN );
+	CLERIC( HeroSubClass.PRIEST, HeroSubClass.PALADIN ),
+	//personajes extra: reutilizan el arbol de talentos, subclases y habilidades de su clase base
+	GOKU( HeroSubClass.BERSERKER, HeroSubClass.GLADIATOR ),
+	VEGETA( HeroSubClass.CHAMPION, HeroSubClass.MONK ),
+	GOHAN( HeroSubClass.BATTLEMAGE, HeroSubClass.WARLOCK );
 
 	private HeroSubClass[] subClasses;
 
 	HeroClass( HeroSubClass...subClasses ) {
 		this.subClasses = subClasses;
+	}
+
+	//clase "real" de la que el personaje toma talentos, habilidades, sprite y mecanicas
+	public HeroClass base(){
+		switch (this){
+			case GOKU:   return WARRIOR;
+			case VEGETA: return DUELIST;
+			case GOHAN:  return MAGE;
+			default:     return this;
+		}
 	}
 
 	public void initHero( Hero hero ) {
@@ -116,7 +132,7 @@ public enum HeroClass {
 
 		new ScrollOfIdentify().identify();
 
-		switch (this) {
+		switch (base()) {
 			case WARRIOR:
 				initWarrior( hero );
 				break;
@@ -142,6 +158,27 @@ public enum HeroClass {
 				break;
 		}
 
+		switch (this) {
+			case GOKU:
+				//Goku pelea con su baston y empieza con comida extra
+				(hero.belongings.weapon = new Quarterstaff()).identify();
+				new Food().collect();
+				break;
+			case VEGETA:
+				//Vegeta: armadura mas fuerte desde el inicio
+				if (hero.belongings.armor != null) hero.belongings.armor.upgrade();
+				break;
+			case GOHAN:
+				//Gohan: su baston viene con un rayo en vez de un misil magico
+				MagesStaff ki = new MagesStaff(new WandOfLightning());
+				(hero.belongings.weapon = ki).identify();
+				hero.belongings.weapon.activate(hero);
+				Dungeon.quickslot.setSlot(0, ki);
+				break;
+			default:
+				break;
+		}
+
 		if (SPDSettings.quickslotWaterskin()) {
 			for (int s = 0; s < QuickSlot.SIZE; s++) {
 				if (Dungeon.quickslot.getItem(s) == null) {
@@ -154,7 +191,7 @@ public enum HeroClass {
 	}
 
 	public Badges.Badge masteryBadge() {
-		switch (this) {
+		switch (base()) {
 			case WARRIOR:
 				return Badges.Badge.MASTERY_WARRIOR;
 			case MAGE:
@@ -277,7 +314,7 @@ public enum HeroClass {
 	}
 
 	public ArmorAbility[] armorAbilities(){
-		switch (this) {
+		switch (base()) {
 			case WARRIOR: default:
 				return new ArmorAbility[]{new HeroicLeap(), new Shockwave(), new Endure()};
 			case MAGE:
@@ -294,7 +331,7 @@ public enum HeroClass {
 	}
 
 	public String spritesheet() {
-		switch (this) {
+		switch (base()) {
 			case WARRIOR: default:
 				return Assets.Sprites.WARRIOR;
 			case MAGE:
@@ -311,7 +348,7 @@ public enum HeroClass {
 	}
 
 	public String splashArt(){
-		switch (this) {
+		switch (base()) {
 			case WARRIOR: default:
 				return Assets.Splashes.WARRIOR;
 			case MAGE:
@@ -330,6 +367,9 @@ public enum HeroClass {
 	public boolean isUnlocked(){
 		//always unlock on debug builds
 		if (DeviceCompat.isDebug()) return true;
+
+		//los personajes extra siempre estan desbloqueados
+		if (base() != this) return true;
 
 		switch (this){
 			case WARRIOR: default:

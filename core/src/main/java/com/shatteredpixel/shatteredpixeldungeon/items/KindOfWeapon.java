@@ -114,7 +114,7 @@ abstract public class KindOfWeapon extends EquipableItem {
 		}
 
 		// 15/25% chance
-		if (hero.heroClass != HeroClass.CLERIC && hero.hasTalent(Talent.HOLY_INTUITION)
+		if (hero.heroClass.base() != HeroClass.CLERIC && hero.hasTalent(Talent.HOLY_INTUITION)
 				&& cursed && !cursedKnown
 				&& Random.Int(20) < 1 + 2*hero.pointsInTalent(Talent.HOLY_INTUITION)){
 			cursedKnown = true;

@@ -232,7 +232,7 @@ public class Armor extends EquipableItem {
 	public boolean doEquip( Hero hero ) {
 
 		// 15/25% chance
-		if (hero.heroClass != HeroClass.CLERIC && hero.hasTalent(Talent.HOLY_INTUITION)
+		if (hero.heroClass.base() != HeroClass.CLERIC && hero.hasTalent(Talent.HOLY_INTUITION)
 				&& cursed && !cursedKnown
 				&& Random.Int(20) < 1 + 2*hero.pointsInTalent(Talent.HOLY_INTUITION)){
 			cursedKnown = true;
@@ -258,7 +258,7 @@ public class Armor extends EquipableItem {
 			Talent.onItemEquipped(hero, this);
 			hero.spend( timeToEquip( hero ) );
 
-			if (Dungeon.hero.heroClass == HeroClass.WARRIOR && checkSeal() == null){
+			if (Dungeon.hero.heroClass.base() == HeroClass.WARRIOR && checkSeal() == null){
 				BrokenSeal seal = oldArmor != null ? oldArmor.checkSeal() : null;
 				if (seal != null && (!cursed || (seal.getGlyph() != null && seal.getGlyph().curse()))){
 
@@ -477,7 +477,7 @@ public class Armor extends EquipableItem {
 
 				//the chance from +4/5, and then +6 can be set to 0% with metamorphed runic transference
 				int lossChanceStart = 4;
-				if (Dungeon.hero != null && Dungeon.hero.heroClass != HeroClass.WARRIOR && Dungeon.hero.hasTalent(Talent.RUNIC_TRANSFERENCE)){
+				if (Dungeon.hero != null && Dungeon.hero.heroClass.base() != HeroClass.WARRIOR && Dungeon.hero.hasTalent(Talent.RUNIC_TRANSFERENCE)){
 					lossChanceStart += 1+Dungeon.hero.pointsInTalent(Talent.RUNIC_TRANSFERENCE);
 				}
 

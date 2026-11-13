@@ -89,7 +89,7 @@ public class Blacksmith extends NPC {
 			String msg1 = "";
 			String msg2 = "";
 
-			switch (Dungeon.hero.heroClass){
+			switch (Dungeon.hero.heroClass.base()){
 				case WARRIOR:   msg1 += Messages.get(Blacksmith.this, "intro_quest_warrior"); break;
 				case MAGE:      msg1 += Messages.get(Blacksmith.this, "intro_quest_mage"); break;
 				case ROGUE:     msg1 += Messages.get(Blacksmith.this, "intro_quest_rogue"); break;

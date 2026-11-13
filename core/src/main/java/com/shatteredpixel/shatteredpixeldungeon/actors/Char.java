@@ -651,7 +651,7 @@ public abstract class Char extends Actor {
 			acuRoll *= buff.evasionAndAccuracyFactor();
 		}
 		acuRoll *= AscensionChallenge.statModifier(attacker);
-		if (Dungeon.hero.heroClass != HeroClass.CLERIC
+		if (Dungeon.hero.heroClass.base() != HeroClass.CLERIC
 				&& Dungeon.hero.hasTalent(Talent.BLESS)
 				&& attacker.alignment == Alignment.ALLY){
 			// + 3%/5%
@@ -667,7 +667,7 @@ public abstract class Char extends Actor {
 			defRoll *= buff.evasionAndAccuracyFactor();
 		}
 		defRoll *= AscensionChallenge.statModifier(defender);
-		if (Dungeon.hero.heroClass != HeroClass.CLERIC
+		if (Dungeon.hero.heroClass.base() != HeroClass.CLERIC
 				&& Dungeon.hero.hasTalent(Talent.BLESS)
 				&& defender.alignment == Alignment.ALLY){
 			// + 3%/5%
@@ -733,7 +733,7 @@ public abstract class Char extends Actor {
 			damage -= Random.NormalIntRange(min, 2*min);
 			damage = Math.max(damage, 0);
 		} else if (this == Dungeon.hero
-				&& Dungeon.hero.heroClass != HeroClass.CLERIC
+				&& Dungeon.hero.heroClass.base() != HeroClass.CLERIC
 				&& Dungeon.hero.hasTalent(Talent.SHIELD_OF_LIGHT)
 				&& TargetHealthIndicator.instance.target() == enemy){
 			//33/50%

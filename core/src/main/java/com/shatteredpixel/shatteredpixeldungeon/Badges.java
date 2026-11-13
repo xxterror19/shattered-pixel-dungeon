@@ -857,7 +857,7 @@ public class Badges {
 			displayBadge( badge );
 			
 			if (badge == Badge.BOSS_SLAIN_1) {
-				badge = firstBossClassBadges.get(Dungeon.hero.heroClass);
+				badge = firstBossClassBadges.get(Dungeon.hero.heroClass.base());
 				if (badge == null) return;
 				local.add( badge );
 				unlock(badge);
@@ -936,7 +936,7 @@ public class Badges {
 	public static void validateMastery() {
 		
 		Badge badge = null;
-		switch (Dungeon.hero.heroClass) {
+		switch (Dungeon.hero.heroClass.base()) {
 			case WARRIOR:
 				badge = Badge.MASTERY_WARRIOR;
 				break;
@@ -1028,7 +1028,7 @@ public class Badges {
 			displayBadge( badge );
 		}
 
-		badge = victoryClassBadges.get(Dungeon.hero.heroClass);
+		badge = victoryClassBadges.get(Dungeon.hero.heroClass.base());
 		if (badge == null) return;
 		local.add( badge );
 		unlock(badge);
@@ -1356,7 +1356,7 @@ public class Badges {
 		if (badge == Badge.BOSS_SLAIN_1_ALL_CLASSES){
 			for (HeroClass cls : HeroClass.values()){
 				result += "\n";
-				if (isUnlocked(firstBossClassBadges.get(cls)))  result += "_" + Messages.titleCase(cls.title()) + "_";
+				if (isUnlocked(firstBossClassBadges.get(cls.base())))  result += "_" + Messages.titleCase(cls.title()) + "_";
 				else                                            result += Messages.titleCase(cls.title());
 			}
 
@@ -1366,7 +1366,7 @@ public class Badges {
 
 			for (HeroClass cls : HeroClass.values()){
 				result += "\n";
-				if (isUnlocked(victoryClassBadges.get(cls)))    result += "_" + Messages.titleCase(cls.title()) + "_";
+				if (isUnlocked(victoryClassBadges.get(cls.base())))    result += "_" + Messages.titleCase(cls.title()) + "_";
 				else                                            result += Messages.titleCase(cls.title());
 			}
 
