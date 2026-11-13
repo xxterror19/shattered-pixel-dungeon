@@ -56,7 +56,7 @@ public class Belongings implements Iterable<Item> {
 			image = ItemSpriteSheet.BACKPACK;
 		}
 		public int capacity(){
-			int cap = super.capacity();
+			int cap = super.capacity() + 10; //inventario ampliado
 			for (Item item : items){
 				if (item instanceof Bag){
 					cap++;
