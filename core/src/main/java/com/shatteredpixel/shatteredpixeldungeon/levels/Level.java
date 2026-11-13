@@ -223,7 +223,7 @@ public abstract class Level implements Bundlable {
 		//TODO maybe just make this part of RegularLevel?
 		if (!Dungeon.bossLevel() && Dungeon.branch == 0) {
 
-			addItemToSpawn(Generator.random(Generator.Category.FOOD));
+			for (int i = 0; i < 3; i++) addItemToSpawn(Generator.random(Generator.Category.FOOD));
 
 			if (Dungeon.posNeeded()) {
 				Dungeon.LimitedDrops.STRENGTH_POTIONS.count++;
