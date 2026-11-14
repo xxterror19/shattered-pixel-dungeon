@@ -51,8 +51,12 @@ public enum HeroSubClass {
 	PALADIN(HeroIcon.PALADIN),
 
 	//transformaciones de Kael, Nyx y Orin
-	FORMA_SOLAR(HeroIcon.BERSERKER),
-	COLOSO(HeroIcon.GLADIATOR);
+	SOLAR(HeroIcon.BERSERKER),
+	COLOSO(HeroIcon.GLADIATOR),
+	SOMBRA(HeroIcon.ASSASSIN),
+	ESPECTRO(HeroIcon.FREERUNNER),
+	TORMENTA(HeroIcon.BATTLEMAGE),
+	ARCANO(HeroIcon.WARLOCK);
 
 	int icon;
 

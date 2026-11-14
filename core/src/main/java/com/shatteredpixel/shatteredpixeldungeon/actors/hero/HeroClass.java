@@ -93,9 +93,9 @@ public enum HeroClass {
 	DUELIST( HeroSubClass.CHAMPION, HeroSubClass.MONK ),
 	CLERIC( HeroSubClass.PRIEST, HeroSubClass.PALADIN ),
 	//personajes extra: reutilizan el arbol de talentos, subclases y habilidades de su clase base
-	KAEL( HeroSubClass.FORMA_SOLAR, HeroSubClass.COLOSO ),
-	NYX( HeroSubClass.FORMA_SOLAR, HeroSubClass.COLOSO ),
-	ORIN( HeroSubClass.FORMA_SOLAR, HeroSubClass.COLOSO );
+	KAEL( HeroSubClass.SOLAR, HeroSubClass.COLOSO ),
+	NYX( HeroSubClass.SOMBRA, HeroSubClass.ESPECTRO ),
+	ORIN( HeroSubClass.TORMENTA, HeroSubClass.ARCANO );
 
 	private HeroSubClass[] subClasses;
 

@@ -9,19 +9,35 @@ import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 //Al elegir subclase, Kael, Nyx y Orin se transforman y su arma pasa a ser un baston de plasma
 public class FormTransformation {
 
-	public static void apply(Hero hero, HeroSubClass way) {
-		if (way != HeroSubClass.FORMA_SOLAR && way != HeroSubClass.COLOSO) return;
-
-		if (way == HeroSubClass.COLOSO) {
-			//Coloso: mucho mas vida y fuerza
-			hero.HTBoost += 100;
-			hero.STR += 5;
-			GLog.p("¡Te transformas en Coloso, el gran mono!");
-		} else {
-			hero.HTBoost += 50;
-			GLog.p("¡Te transformas en Forma Solar!");
+	//{vida maxima, fuerza, multiplicador de dano, multiplicador de dano recibido}
+	private static float[] stats(HeroSubClass way){
+		switch (way){
+			case SOLAR: return new float[]{50, 0, 1.3f, 1.0f};
+			case COLOSO: return new float[]{100, 5, 1.2f, 0.85f};
+			case SOMBRA: return new float[]{30, 0, 1.4f, 1.0f};
+			case ESPECTRO: return new float[]{60, 0, 1.1f, 0.75f};
+			case TORMENTA: return new float[]{40, 0, 1.35f, 1.0f};
+			case ARCANO: return new float[]{80, 3, 1.15f, 0.8f};
+			default: return null;
 		}
+	}
+
+	public static float dmgMult(HeroSubClass way){
+		float[] s = stats(way); return s == null ? 1f : s[2];
+	}
+
+	public static float takenMult(HeroSubClass way){
+		float[] s = stats(way); return s == null ? 1f : s[3];
+	}
+
+	public static void apply(Hero hero, HeroSubClass way) {
+		float[] s = stats(way);
+		if (s == null) return;
+
+		hero.HTBoost += (int)s[0];
+		hero.STR += (int)s[1];
 		hero.updateHT(true);
+		GLog.p("¡Te transformas: " + way.title() + "!");
 
 		//el arma pasa a ser un baston con una varita de plasma
 		MagesStaff staff = new MagesStaff(new WandOfPlasma());

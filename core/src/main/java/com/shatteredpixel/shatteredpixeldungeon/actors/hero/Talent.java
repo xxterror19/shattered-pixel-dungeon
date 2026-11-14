@@ -190,10 +190,60 @@ public enum Talent {
 	HOLY_LANCE(171, 3), HALLOWED_GROUND(172, 3), MNEMONIC_PRAYER(173, 3),
 	//Paladin T3
 	LAY_ON_HANDS(174, 3), AURA_OF_PROTECTION(175, 3), WALL_OF_LIGHT(176, 3),
-	//Forma Solar T3
-	AURA_DORADA(27, 3), PODER_LIMITE(28, 3), RENACER(29, 3), EXPLOSION_SOLAR(30, 3),
-	//Coloso T3
-	PIEL_DE_GIGANTE(31, 3), FUERZA_BESTIAL(59, 3), RUGIDO(60, 3), FURIA_SALVAJE(61, 3),
+	//Kael
+	TEMPLE_SOLAR(27),
+	ACERO_BRILLANTE(28),
+	GOLPE_RADIANTE(29),
+	BRASAS_VIVAS(30),
+	DISCIPLINA_DE_HIERRO(31),
+	BOTIN_DORADO(59),
+	MARCHA_FIRME(60),
+	PULSO_DE_COMBATE(61),
+	GUARDIA_DORADA(62),
+	CORAZON_DE_LEON(63, 3),
+	ESPADA_ARDIENTE(91, 3),
+	CORONA_SOLAR(92, 3),
+	FUEGO_INTERIOR(93, 3),
+	ESCUDO_DE_LUZ(94, 3),
+	PIEL_DE_ROCA(95, 3),
+	PISOTON(123, 3),
+	VIGOR_COLOSAL(124, 3),
+	//Nyx
+	PASO_SOMBRIO(125),
+	OJO_NOCTURNO(126),
+	MANTO_DE_SOMBRA(127),
+	FILO_SEDIENTO(155),
+	DAGA_OCULTA(156),
+	CAZADORA(157),
+	PULSO_LUNAR(158),
+	VELO_ESPECTRAL(159),
+	SAQUEO(187),
+	SENTIDOS_AFILADOS(188, 3),
+	ASESINATO_FANTASMA(189, 3),
+	ECLIPSE(190, 3),
+	CACERIA(191, 3),
+	DANZA_LETAL(192, 3),
+	FORMA_ETEREA(193, 3),
+	TACTO_GELIDO(194, 3),
+	ALMA_ROBADA(195, 3),
+	//Orin
+	MENTE_LUCIDA(196),
+	CHISPA(197),
+	BARRERA_ESTATICA(198),
+	RESERVA_ARCANA(199),
+	PUNTERIA_ARCANA(200),
+	PASOS_DE_VIENTO(201),
+	FORTUNA_DEL_MAGO(202),
+	AURA_DE_TORMENTA(203),
+	ESTUDIO_PROFUNDO(204),
+	MAESTRIA_ELEMENTAL(205, 3),
+	MENTE_BLINDADA(206, 3),
+	TRUENO(207, 3),
+	SOBRECARGA(208, 3),
+	RELAMPAGO_VITAL(209, 3),
+	ESCUDO_ARCANO(210, 3),
+	MENTE_MAESTRA(211, 3),
+	TORRE_DE_MANA(212, 3),
 	//Ascended Form T4
 	DIVINE_INTERVENTION(177, 4), JUDGEMENT(178, 4), FLASH(179, 4),
 	//Trinity T4
@@ -499,6 +549,7 @@ public enum Talent {
 	}
 
 	public static void onTalentUpgraded( Hero hero, Talent talent ){
+		if (ExtraTalents.has(talent)) hero.updateHT(true);
 		//for metamorphosis
 		if (talent == IRON_WILL && hero.heroClass.base() != HeroClass.WARRIOR){
 			Buff.affect(hero, BrokenSeal.WarriorShield.class);
@@ -979,7 +1030,7 @@ public enum Talent {
 		ArrayList<Talent> tierTalents = new ArrayList<>();
 
 		//tier 1
-		switch (cls.base()){
+		if (ExtraTalents.isExtra(cls)) tierTalents.addAll(ExtraTalents.classTalents(cls, 0)); else switch (cls.base()){
 			case WARRIOR: default:
 				Collections.addAll(tierTalents, HEARTY_MEAL, VETERANS_INTUITION, PROVOKED_ANGER, IRON_WILL);
 				break;
@@ -1008,7 +1059,7 @@ public enum Talent {
 		tierTalents.clear();
 
 		//tier 2
-		switch (cls.base()){
+		if (ExtraTalents.isExtra(cls)) tierTalents.addAll(ExtraTalents.classTalents(cls, 1)); else switch (cls.base()){
 			case WARRIOR: default:
 				Collections.addAll(tierTalents, IRON_STOMACH, LIQUID_WILLPOWER, RUNIC_TRANSFERENCE, LETHAL_MOMENTUM, IMPROVISED_PROJECTILES);
 				break;
@@ -1037,7 +1088,7 @@ public enum Talent {
 		tierTalents.clear();
 
 		//tier 3
-		switch (cls.base()){
+		if (ExtraTalents.isExtra(cls)) tierTalents.addAll(ExtraTalents.classTalents(cls, 2)); else switch (cls.base()){
 			case WARRIOR: default:
 				Collections.addAll(tierTalents, HOLD_FAST, STRONGMAN);
 				break;
@@ -1084,11 +1135,8 @@ public enum Talent {
 
 		//tier 3
 		switch (cls){
-			case FORMA_SOLAR:
-				Collections.addAll(tierTalents, AURA_DORADA, PODER_LIMITE, RENACER, EXPLOSION_SOLAR);
-				break;
-			case COLOSO:
-				Collections.addAll(tierTalents, PIEL_DE_GIGANTE, FUERZA_BESTIAL, RUGIDO, FURIA_SALVAJE);
+			case SOLAR: case COLOSO: case SOMBRA: case ESPECTRO: case TORMENTA: case ARCANO:
+				tierTalents.addAll(ExtraTalents.subclassTalents(cls));
 				break;
 			case BERSERKER: default:
 				Collections.addAll(tierTalents, ENDLESS_RAGE, DEATHLESS_FURY, ENRAGED_CATALYST);

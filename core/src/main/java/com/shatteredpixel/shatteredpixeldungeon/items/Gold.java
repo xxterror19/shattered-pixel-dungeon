@@ -62,7 +62,7 @@ public class Gold extends Item {
 		Catalog.setSeen(getClass());
 		Statistics.itemTypesDiscovered.add(getClass());
 
-		quantity *= 8;
+		quantity = Math.round(quantity * 8 * (1f + com.shatteredpixel.shatteredpixeldungeon.actors.hero.ExtraTalents.bonus(hero, com.shatteredpixel.shatteredpixeldungeon.actors.hero.ExtraTalents.Kind.GOLD)));
 		Dungeon.gold += quantity;
 		Statistics.goldCollected += quantity;
 		Badges.validateGoldCollected();

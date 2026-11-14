@@ -47,6 +47,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Sleep;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SoulMark;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SwarmIntelTracker;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Terror;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.ExtraTalents;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
@@ -995,8 +996,8 @@ public abstract class Mob extends Char {
 					exp = Math.round(10 * spawningWeight());
 				}
 
-				//Explosion solar: +20% de xp por punto
-				exp = Math.round(exp * (1f + 0.2f*Dungeon.hero.pointsInTalent(Talent.EXPLOSION_SOLAR)));
+				//talentos propios: mas experiencia
+				exp = Math.round(exp * (1f + ExtraTalents.bonus(Dungeon.hero, ExtraTalents.Kind.XP)));
 
 				if (exp > 0) {
 					Dungeon.hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(exp), FloatingText.EXPERIENCE);
@@ -1005,9 +1006,9 @@ public abstract class Mob extends Char {
 				if (Dungeon.hero.heroClass == HeroClass.NYX){
 					Dungeon.hero.HP = Math.min(Dungeon.hero.HT, Dungeon.hero.HP + 3);
 				}
-				//Renacer: cura 2% de la vida maxima por punto. Rugido: cura 2 por punto
+				//talentos propios: curacion al derrotar enemigos
 				Hero h = Dungeon.hero;
-				int killHeal = Math.round(h.HT * 0.02f * h.pointsInTalent(Talent.RENACER)) + 2*h.pointsInTalent(Talent.RUGIDO);
+				int killHeal = Math.round(h.HT * ExtraTalents.bonus(h, ExtraTalents.Kind.KILLHEAL_PCT) + ExtraTalents.bonus(h, ExtraTalents.Kind.KILLHEAL_FLAT));
 				if (killHeal > 0) h.HP = Math.min(h.HT, h.HP + killHeal);
 				Dungeon.hero.earnExp(exp, getClass());
 				//in the vault level we manually progress ring IDing. 5 enemies defeated to an ID

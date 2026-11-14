@@ -264,6 +264,7 @@ public class Hero extends Char {
 		HT = 100 + 10*(lvl-1) + HTBoost;
 		float multiplier = RingOfMight.HTMultiplier(this);
 		HT = Math.round(multiplier * HT);
+		HT += Math.round(ExtraTalents.bonus(this, ExtraTalents.Kind.MAXHP));
 		
 		if (buff(ElixirOfMight.HTBoost.class) != null){
 			HT += buff(ElixirOfMight.HTBoost.class).boost();
@@ -513,7 +514,7 @@ public class Hero extends Char {
 	public int attackSkill( Char target ) {
 		KindOfWeapon wep = belongings.attackingWeapon();
 		
-		float accuracy = 1;
+		float accuracy = 1f + ExtraTalents.bonus(this, ExtraTalents.Kind.ACC);
 		accuracy *= RingOfAccuracy.accuracyMultiplier( this );
 		
 		//precise assault and liquid agility
@@ -583,6 +584,7 @@ public class Hero extends Char {
 		float evasion = defenseSkill;
 		
 		evasion *= RingOfEvasion.evasionMultiplier( this );
+		evasion *= 1f + ExtraTalents.bonus(this, ExtraTalents.Kind.EVA);
 
 		if (buff(Talent.LiquidAgilEVATracker.class) != null){
 			if (pointsInTalent(Talent.LIQUID_AGILITY) == 1){
@@ -704,15 +706,10 @@ public class Hero extends Char {
 			dmg = Math.round(dmg * 1.5f);
 		}
 
-		//Forma Solar: +30% de dano. Coloso: +20% de dano
-		if (subClass == HeroSubClass.FORMA_SOLAR){
-			dmg = Math.round(dmg * (1.3f + 0.1f*pointsInTalent(Talent.PODER_LIMITE)));
-		} else if (subClass == HeroSubClass.COLOSO){
-			float f = 1.2f + 0.1f*pointsInTalent(Talent.FUERZA_BESTIAL);
-			//Furia salvaje: con menos de la mitad de vida pega mas fuerte
-			if (HP*2 <= HT) f += 0.15f*pointsInTalent(Talent.FURIA_SALVAJE);
-			dmg = Math.round(dmg * f);
-		}
+		//multiplicador de la transformacion y talentos propios
+		dmg = Math.round(dmg * FormTransformation.dmgMult(subClass));
+		dmg = Math.round(dmg * (1f + ExtraTalents.bonus(this, ExtraTalents.Kind.DMG)
+				+ (HP*2 <= HT ? ExtraTalents.bonus(this, ExtraTalents.Kind.LOWDMG) : 0f)));
 
 		if (dmg < 0) dmg = 0;
 		return dmg;
@@ -730,7 +727,7 @@ public class Hero extends Char {
 	@Override
 	public float speed() {
 
-		float speed = super.speed();
+		float speed = super.speed() * (1f + ExtraTalents.bonus(this, ExtraTalents.Kind.SPEED));
 
 		speed *= RingOfHaste.speedMultiplier(this);
 		
@@ -1663,12 +1660,9 @@ public class Hero extends Char {
 		if (heroClass == HeroClass.ORIN){
 			dmg = Math.round(dmg * 0.8f);
 		}
-		//Coloso: piel de mono gigante, recibe 15% menos dano
-		if (subClass == HeroSubClass.COLOSO){
-			dmg = Math.round(dmg * 0.85f);
-		}
-		//Aura dorada y Piel de gigante: -5% de dano recibido por punto
-		dmg = Math.round(dmg * Math.max(0f, 1f - 0.05f*(pointsInTalent(Talent.AURA_DORADA) + pointsInTalent(Talent.PIEL_DE_GIGANTE))));
+		//transformacion y talentos de reduccion de dano
+		dmg = Math.round(dmg * FormTransformation.takenMult(subClass));
+		dmg = Math.round(dmg * Math.max(0f, 1f - ExtraTalents.bonus(this, ExtraTalents.Kind.REDUCE)));
 
 		//temporarily assign to a float to avoid rounding a bunch
 		float damage = dmg;
