@@ -1,5 +1,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.hero;
 
+import static com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent.*;
+
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
