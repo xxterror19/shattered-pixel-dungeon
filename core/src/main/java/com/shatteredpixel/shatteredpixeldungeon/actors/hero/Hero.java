@@ -706,9 +706,12 @@ public class Hero extends Char {
 
 		//Super Saiyajin: +30% de dano. Oozaru: +20% de dano
 		if (subClass == HeroSubClass.SUPER_SAIYAJIN){
-			dmg = Math.round(dmg * 1.3f);
+			dmg = Math.round(dmg * (1.3f + 0.1f*pointsInTalent(Talent.PODER_LIMITE)));
 		} else if (subClass == HeroSubClass.OOZARU){
-			dmg = Math.round(dmg * 1.2f);
+			float f = 1.2f + 0.1f*pointsInTalent(Talent.FUERZA_BESTIAL);
+			//Furia salvaje: con menos de la mitad de vida pega mas fuerte
+			if (HP*2 <= HT) f += 0.15f*pointsInTalent(Talent.FURIA_SALVAJE);
+			dmg = Math.round(dmg * f);
 		}
 
 		if (dmg < 0) dmg = 0;
@@ -1664,6 +1667,8 @@ public class Hero extends Char {
 		if (subClass == HeroSubClass.OOZARU){
 			dmg = Math.round(dmg * 0.85f);
 		}
+		//Aura dorada y Piel de gigante: -5% de dano recibido por punto
+		dmg = Math.round(dmg * Math.max(0f, 1f - 0.05f*(pointsInTalent(Talent.AURA_DORADA) + pointsInTalent(Talent.PIEL_DE_GIGANTE))));
 
 		//temporarily assign to a float to avoid rounding a bunch
 		float damage = dmg;

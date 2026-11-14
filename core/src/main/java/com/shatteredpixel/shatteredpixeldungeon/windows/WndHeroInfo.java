@@ -172,7 +172,16 @@ public class WndHeroInfo extends WndTabbed {
 				add(info[i]);
 			}
 
-			switch (cls.base()){
+			//los personajes extra tienen 5 parrafos de descripcion, cada uno con su propio icono
+			if (cls.base() != cls){
+				int weapon = cls == HeroClass.GOKU ? ItemSpriteSheet.QUARTERSTAFF
+						: cls == HeroClass.VEGETA ? ItemSpriteSheet.RAPIER : ItemSpriteSheet.MAGES_STAFF;
+				icons = new Image[]{ new ItemSprite(weapon),
+						new ItemSprite(ItemSpriteSheet.WAND_LIGHTNING),
+						Icons.TALENT.get(),
+						new ItemSprite(ItemSpriteSheet.ARMOR_CLOTH),
+						new ItemSprite(ItemSpriteSheet.SCROLL_ISAZ)};
+			} else switch (cls.base()){
 				case WARRIOR: default:
 					icons = new Image[]{ new ItemSprite(ItemSpriteSheet.SEAL),
 							new ItemSprite(ItemSpriteSheet.WORN_SHORTSWORD),

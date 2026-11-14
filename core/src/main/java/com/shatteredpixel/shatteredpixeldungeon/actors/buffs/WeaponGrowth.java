@@ -1,15 +1,15 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.buffs;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
-import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Belongings;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.utils.Bundle;
 
-//The equipped weapon gains +1 upgrade every INTERVAL turns
+//Todo el equipo puesto (arma, armadura, anillo, artefacto, misc) gana +1 de mejora cada INTERVAL turnos
 public class WeaponGrowth extends Buff {
 
-	public static final int INTERVAL = 500;
+	public static final int INTERVAL = 100;
 
 	private int left = INTERVAL;
 
@@ -21,11 +21,17 @@ public class WeaponGrowth extends Buff {
 	public boolean act() {
 		if (--left <= 0) {
 			left = INTERVAL;
-			KindOfWeapon weapon = ((Hero) target).belongings.weapon;
-			if (weapon != null) {
-				weapon.upgrade();
+			Belongings b = ((Hero) target).belongings;
+			boolean any = false;
+			for (Item i : new Item[]{b.weapon, b.armor, b.ring, b.artifact, b.misc}) {
+				if (i != null && i.isUpgradable()) {
+					i.upgrade();
+					any = true;
+				}
+			}
+			if (any) {
 				Item.updateQuickslot();
-				GLog.p("Tu arma mejora: " + weapon.name());
+				GLog.p("Tu equipo mejora");
 			}
 		}
 		spend(TICK);

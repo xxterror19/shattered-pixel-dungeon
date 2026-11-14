@@ -104,7 +104,10 @@ public class WndBag extends WndTabbed {
 		slotHeight = PixelScene.landscape() ? SLOT_HEIGHT_L : SLOT_HEIGHT_P;
 
 		nCols = PixelScene.landscape() ? COLS_L : COLS_P;
-		nRows = (int)Math.ceil(35/(float)nCols); //inventario ampliado: 35 slots en total
+		//5 de equipo + capacidad de la bolsa (+1 si muestra la bolsa misma o el 2do arma)
+		boolean isBackpack = bag == Dungeon.hero.belongings.backpack;
+		int slotsNeeded = 5 + bag.capacity() + ((!isBackpack || Dungeon.hero.belongings.secondWep != null) ? 1 : 0);
+		nRows = (int)Math.ceil(slotsNeeded/(float)nCols);
 
 		int windowWidth = slotWidth * nCols + SLOT_MARGIN * (nCols - 1);
 		int windowHeight = TITLE_HEIGHT + slotHeight * nRows + SLOT_MARGIN * (nRows - 1);

@@ -190,6 +190,10 @@ public enum Talent {
 	HOLY_LANCE(171, 3), HALLOWED_GROUND(172, 3), MNEMONIC_PRAYER(173, 3),
 	//Paladin T3
 	LAY_ON_HANDS(174, 3), AURA_OF_PROTECTION(175, 3), WALL_OF_LIGHT(176, 3),
+	//Super Saiyajin T3
+	AURA_DORADA(27, 3), PODER_LIMITE(28, 3), ZENKAI(29, 3), EXPLOSION_DE_KI(30, 3),
+	//Oozaru T3
+	PIEL_DE_GIGANTE(31, 3), FUERZA_BESTIAL(59, 3), RUGIDO(60, 3), FURIA_SALVAJE(61, 3),
 	//Ascended Form T4
 	DIVINE_INTERVENTION(177, 4), JUDGEMENT(178, 4), FLASH(179, 4),
 	//Trinity T4
@@ -1080,8 +1084,11 @@ public enum Talent {
 
 		//tier 3
 		switch (cls){
-			case SUPER_SAIYAJIN: case OOZARU:
-				//las transformaciones saiyajin no tienen talentos de nivel 3
+			case SUPER_SAIYAJIN:
+				Collections.addAll(tierTalents, AURA_DORADA, PODER_LIMITE, ZENKAI, EXPLOSION_DE_KI);
+				break;
+			case OOZARU:
+				Collections.addAll(tierTalents, PIEL_DE_GIGANTE, FUERZA_BESTIAL, RUGIDO, FURIA_SALVAJE);
 				break;
 			case BERSERKER: default:
 				Collections.addAll(tierTalents, ENDLESS_RAGE, DEATHLESS_FURY, ENRAGED_CATALYST);
