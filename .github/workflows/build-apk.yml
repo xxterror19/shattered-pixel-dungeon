@@ -16,9 +16,15 @@ jobs:
           java-version: 21
       - name: Accept Android licenses
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+      - name: Usar siempre la misma llave de firma (permite actualizar sin perder partidas)
+        run: |
+          mkdir -p ~/.android
+          cp .github/debug.keystore ~/.android/debug.keystore
       - name: Build debug APK
         run: ./gradlew android:assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:
           name: ShatteredPixelDungeon-modificado
           path: android/build/outputs/apk/debug/*.apk
+      - name: Mostrar huella de la firma
+        run: keytool -printcert -jarfile android/build/outputs/apk/debug/*.apk | grep SHA256
