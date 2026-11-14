@@ -699,15 +699,15 @@ public class Hero extends Char {
 			dmg = Math.round(dmg * (1.025f + .025f*pointsInTalent(Talent.WEAPON_RECHARGING)));
 		}
 
-		//Goku - Super Saiyajin: con poca vida pega 50% mas fuerte
-		if (heroClass == HeroClass.GOKU && HP * 10 <= HT * 3){
+		//Kael - Forma Solar: con poca vida pega 50% mas fuerte
+		if (heroClass == HeroClass.KAEL && HP * 10 <= HT * 3){
 			dmg = Math.round(dmg * 1.5f);
 		}
 
-		//Super Saiyajin: +30% de dano. Oozaru: +20% de dano
-		if (subClass == HeroSubClass.SUPER_SAIYAJIN){
+		//Forma Solar: +30% de dano. Coloso: +20% de dano
+		if (subClass == HeroSubClass.FORMA_SOLAR){
 			dmg = Math.round(dmg * (1.3f + 0.1f*pointsInTalent(Talent.PODER_LIMITE)));
-		} else if (subClass == HeroSubClass.OOZARU){
+		} else if (subClass == HeroSubClass.COLOSO){
 			float f = 1.2f + 0.1f*pointsInTalent(Talent.FUERZA_BESTIAL);
 			//Furia salvaje: con menos de la mitad de vida pega mas fuerte
 			if (HP*2 <= HT) f += 0.15f*pointsInTalent(Talent.FURIA_SALVAJE);
@@ -1659,12 +1659,12 @@ public class Hero extends Char {
 			GLog.w( Messages.get(this, "pain_resist") );
 		}
 
-		//Gohan - Poder Oculto: recibe 20% menos dano
-		if (heroClass == HeroClass.GOHAN){
+		//Orin - Pacto de Tormenta: recibe 20% menos dano
+		if (heroClass == HeroClass.ORIN){
 			dmg = Math.round(dmg * 0.8f);
 		}
-		//Oozaru: piel de mono gigante, recibe 15% menos dano
-		if (subClass == HeroSubClass.OOZARU){
+		//Coloso: piel de mono gigante, recibe 15% menos dano
+		if (subClass == HeroSubClass.COLOSO){
 			dmg = Math.round(dmg * 0.85f);
 		}
 		//Aura dorada y Piel de gigante: -5% de dano recibido por punto

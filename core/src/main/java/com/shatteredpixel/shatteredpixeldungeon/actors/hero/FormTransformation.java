@@ -6,20 +6,20 @@ import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfPlasma;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MagesStaff;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 
-//Al elegir subclase, Goku, Vegeta y Gohan se transforman y su arma pasa a ser un baston de plasma
-public class SaiyanTransformation {
+//Al elegir subclase, Kael, Nyx y Orin se transforman y su arma pasa a ser un baston de plasma
+public class FormTransformation {
 
 	public static void apply(Hero hero, HeroSubClass way) {
-		if (way != HeroSubClass.SUPER_SAIYAJIN && way != HeroSubClass.OOZARU) return;
+		if (way != HeroSubClass.FORMA_SOLAR && way != HeroSubClass.COLOSO) return;
 
-		if (way == HeroSubClass.OOZARU) {
-			//Oozaru: mucho mas vida y fuerza
+		if (way == HeroSubClass.COLOSO) {
+			//Coloso: mucho mas vida y fuerza
 			hero.HTBoost += 100;
 			hero.STR += 5;
-			GLog.p("¡Te transformas en Oozaru, el gran mono!");
+			GLog.p("¡Te transformas en Coloso, el gran mono!");
 		} else {
 			hero.HTBoost += 50;
-			GLog.p("¡Te transformas en Super Saiyajin!");
+			GLog.p("¡Te transformas en Forma Solar!");
 		}
 		hero.updateHT(true);
 

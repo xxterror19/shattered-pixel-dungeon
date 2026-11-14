@@ -174,8 +174,8 @@ public class WndHeroInfo extends WndTabbed {
 
 			//los personajes extra tienen 5 parrafos de descripcion, cada uno con su propio icono
 			if (cls.base() != cls){
-				int weapon = cls == HeroClass.GOKU ? ItemSpriteSheet.QUARTERSTAFF
-						: cls == HeroClass.VEGETA ? ItemSpriteSheet.RAPIER : ItemSpriteSheet.MAGES_STAFF;
+				int weapon = cls == HeroClass.KAEL ? ItemSpriteSheet.QUARTERSTAFF
+						: cls == HeroClass.NYX ? ItemSpriteSheet.RAPIER : ItemSpriteSheet.MAGES_STAFF;
 				icons = new Image[]{ new ItemSprite(weapon),
 						new ItemSprite(ItemSpriteSheet.WAND_LIGHTNING),
 						Icons.TALENT.get(),

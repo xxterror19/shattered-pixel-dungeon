@@ -93,9 +93,9 @@ public enum HeroClass {
 	DUELIST( HeroSubClass.CHAMPION, HeroSubClass.MONK ),
 	CLERIC( HeroSubClass.PRIEST, HeroSubClass.PALADIN ),
 	//personajes extra: reutilizan el arbol de talentos, subclases y habilidades de su clase base
-	GOKU( HeroSubClass.SUPER_SAIYAJIN, HeroSubClass.OOZARU ),
-	VEGETA( HeroSubClass.SUPER_SAIYAJIN, HeroSubClass.OOZARU ),
-	GOHAN( HeroSubClass.SUPER_SAIYAJIN, HeroSubClass.OOZARU );
+	KAEL( HeroSubClass.FORMA_SOLAR, HeroSubClass.COLOSO ),
+	NYX( HeroSubClass.FORMA_SOLAR, HeroSubClass.COLOSO ),
+	ORIN( HeroSubClass.FORMA_SOLAR, HeroSubClass.COLOSO );
 
 	private HeroSubClass[] subClasses;
 
@@ -106,9 +106,9 @@ public enum HeroClass {
 	//clase "real" de la que el personaje toma talentos, habilidades, sprite y mecanicas
 	public HeroClass base(){
 		switch (this){
-			case GOKU:   return WARRIOR;
-			case VEGETA: return DUELIST;
-			case GOHAN:  return MAGE;
+			case KAEL:   return WARRIOR;
+			case NYX: return DUELIST;
+			case ORIN:  return MAGE;
 			default:     return this;
 		}
 	}
@@ -159,17 +159,17 @@ public enum HeroClass {
 		}
 
 		switch (this) {
-			case GOKU:
-				//Goku pelea con su baston y empieza con comida extra
+			case KAEL:
+				//Kael pelea con su baston y empieza con comida extra
 				(hero.belongings.weapon = new Quarterstaff()).identify();
 				new Food().collect();
 				break;
-			case VEGETA:
-				//Vegeta: armadura mas fuerte desde el inicio
+			case NYX:
+				//Nyx: armadura mas fuerte desde el inicio
 				if (hero.belongings.armor != null) hero.belongings.armor.upgrade();
 				break;
-			case GOHAN:
-				//Gohan: su baston viene con un rayo en vez de un misil magico
+			case ORIN:
+				//Orin: su baston viene con un rayo en vez de un misil magico
 				MagesStaff ki = new MagesStaff(new WandOfLightning());
 				(hero.belongings.weapon = ki).identify();
 				hero.belongings.weapon.activate(hero);
@@ -331,6 +331,13 @@ public enum HeroClass {
 	}
 
 	public String spritesheet() {
+		//los personajes extra tienen sus propios sprites
+		switch (this) {
+			case KAEL: return Assets.Sprites.KAEL;
+			case NYX:  return Assets.Sprites.NYX;
+			case ORIN: return Assets.Sprites.ORIN;
+			default:   break;
+		}
 		switch (base()) {
 			case WARRIOR: default:
 				return Assets.Sprites.WARRIOR;
@@ -348,6 +355,12 @@ public enum HeroClass {
 	}
 
 	public String splashArt(){
+		switch (this) {
+			case KAEL: return Assets.Splashes.KAEL;
+			case NYX:  return Assets.Splashes.NYX;
+			case ORIN: return Assets.Splashes.ORIN;
+			default:   break;
+		}
 		switch (base()) {
 			case WARRIOR: default:
 				return Assets.Splashes.WARRIOR;

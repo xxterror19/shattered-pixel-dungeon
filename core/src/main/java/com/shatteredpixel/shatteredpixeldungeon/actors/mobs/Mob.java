@@ -995,19 +995,19 @@ public abstract class Mob extends Char {
 					exp = Math.round(10 * spawningWeight());
 				}
 
-				//Explosion de ki: +20% de xp por punto
-				exp = Math.round(exp * (1f + 0.2f*Dungeon.hero.pointsInTalent(Talent.EXPLOSION_DE_KI)));
+				//Explosion solar: +20% de xp por punto
+				exp = Math.round(exp * (1f + 0.2f*Dungeon.hero.pointsInTalent(Talent.EXPLOSION_SOLAR)));
 
 				if (exp > 0) {
 					Dungeon.hero.sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(exp), FloatingText.EXPERIENCE);
 				}
-				//Vegeta - Orgullo Saiyajin: cada enemigo derrotado le devuelve 3 de vida
-				if (Dungeon.hero.heroClass == HeroClass.VEGETA){
+				//Nyx - Sed de Sombras: cada enemigo derrotado le devuelve 3 de vida
+				if (Dungeon.hero.heroClass == HeroClass.NYX){
 					Dungeon.hero.HP = Math.min(Dungeon.hero.HT, Dungeon.hero.HP + 3);
 				}
-				//Zenkai: cura 2% de la vida maxima por punto. Rugido: cura 2 por punto
+				//Renacer: cura 2% de la vida maxima por punto. Rugido: cura 2 por punto
 				Hero h = Dungeon.hero;
-				int killHeal = Math.round(h.HT * 0.02f * h.pointsInTalent(Talent.ZENKAI)) + 2*h.pointsInTalent(Talent.RUGIDO);
+				int killHeal = Math.round(h.HT * 0.02f * h.pointsInTalent(Talent.RENACER)) + 2*h.pointsInTalent(Talent.RUGIDO);
 				if (killHeal > 0) h.HP = Math.min(h.HT, h.HP + killHeal);
 				Dungeon.hero.earnExp(exp, getClass());
 				//in the vault level we manually progress ring IDing. 5 enemies defeated to an ID

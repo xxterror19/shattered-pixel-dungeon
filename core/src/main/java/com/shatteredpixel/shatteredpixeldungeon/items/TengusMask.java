@@ -24,7 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.items;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
-import com.shatteredpixel.shatteredpixeldungeon.actors.hero.SaiyanTransformation;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.FormTransformation;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Preparation;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -102,7 +102,7 @@ public class TengusMask extends Item {
 		
 		curUser.subClass = way;
 		Talent.initSubclassTalents(curUser);
-		SaiyanTransformation.apply(curUser, way);
+		FormTransformation.apply(curUser, way);
 
 		if (way == HeroSubClass.ASSASSIN && curUser.invisible > 0){
 			Buff.affect(curUser, Preparation.class);
