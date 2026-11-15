@@ -1,6 +1,7 @@
 extends Node2D
 
 var npc_name := ""
+var kind := "npc"
 var world
 var mark: Label
 

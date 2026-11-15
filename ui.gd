@@ -35,17 +35,22 @@ func buttons() -> Array:
 		{"id": "dash", "c": Vector2(s.x - 262, s.y - 80), "r": 40, "t": "Embestida"},
 		{"id": "heal", "c": Vector2(s.x - 232, s.y - 190), "r": 40, "t": "Curar"},
 		{"id": "fire", "c": Vector2(s.x - 120, s.y - 250), "r": 40, "t": "Fuego"},
-		{"id": "bag", "c": Vector2(s.x - 60, 56), "r": 38, "t": "Mochila"},
+		{"id": "bag", "c": Vector2(s.x - 60, 56), "r": 38, "t": "Menu"},
 		{"id": "quests", "c": Vector2(s.x - 150, 56), "r": 38, "t": "Misiones"},
+		{"id": "map", "c": Vector2(s.x - 240, 56), "r": 38, "t": "Mapa"},
 	]
 	if Game.has_mount: b.append({"id": "mount", "c": Vector2(s.x - 350, s.y - 120), "r": 36, "t": "Montar"})
-	if near_npc() != null: b.append({"id": "talk", "c": Vector2(s.x - 360, s.y - 230), "r": 46, "t": "Hablar"})
+	var na = near_act()
+	if na != null: b.append({"id": "talk", "c": Vector2(s.x - 360, s.y - 230), "r": 46, "t": "Hablar" if na.kind == "npc" else na.verb()})
 	return b
 
-func near_npc():
-	for n in world.npcs:
-		if n.position.distance_to(world.player.position) < 30: return n
-	return null
+func near_act():
+	var best = null; var bd := 30.0
+	for n in world.acts:
+		if n.kind == "node" and n.depleted: continue
+		var d: float = n.position.distance_to(world.player.position)
+		if d < bd: bd = d; best = n
+	return best
 
 func _draw_hud():
 	var s := sz()
@@ -57,6 +62,14 @@ func _draw_hud():
 	hud.draw_rect(Rect2(18, 50, 316 * clamp(float(Game.xp) / Game.xp_needed(), 0, 1), 14), Color(0.3, 0.6, 1.0))
 	hud.draw_string(font, Vector2(24, 63), "Nivel %d" % Game.level, HORIZONTAL_ALIGNMENT_LEFT, -1, 16)
 	hud.draw_string(font, Vector2(16, 96), "Oro: %d" % Game.gold, HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color(1, 0.85, 0.2))
+	var pl = world.player
+	if pl.gnode != null and is_instance_valid(pl.gnode):
+		var f: float = clamp(pl.gt / float(Game.NODES[pl.gnode.res]["time"]), 0, 1)
+		hud.draw_rect(Rect2(s.x / 2 - 110, s.y - 70, 220, 22), Color(0, 0, 0, 0.7))
+		hud.draw_rect(Rect2(s.x / 2 - 108, s.y - 68, 216 * f, 18), Color(0.9, 0.7, 0.2))
+		hud.draw_string(font, Vector2(s.x / 2 - 108, s.y - 74), pl.gnode.verb() + "...", HORIZONTAL_ALIGNMENT_LEFT, -1, 18)
+	if Game.free_points() > 0:
+		hud.draw_string(font, Vector2(16, 122), "¡%d puntos por gastar (Menu)!" % Game.free_points(), HORIZONTAL_ALIGNMENT_LEFT, -1, 18, Color(0.5, 1, 0.5))
 	if joy_idx != -1:
 		hud.draw_circle(joy_origin, 60, Color(1, 1, 1, 0.15))
 		hud.draw_circle(joy_origin + joy_vec() * 60, 28, Color(1, 1, 1, 0.45))
@@ -104,12 +117,17 @@ func _press(id: String):
 	match id:
 		"attack": world.player.attack()
 		"dash", "heal", "fire": world.player.use_skill(id)
-		"bag": open_inventory()
-		"quests": open_quests()
+		"bag": open_menu("mochila")
+		"quests": open_menu("misiones")
+		"map": open_menu("mapa")
 		"mount": Game.mounted = not Game.mounted
 		"talk":
-			var n = near_npc()
-			if n != null: open_dialog(n.npc_name)
+			var n = near_act()
+			if n == null: return
+			if n.kind == "npc": open_dialog(n.npc_name)
+			elif n.kind == "node": world.player.start_gather(n)
+			elif n.res == "banco": open_bank()
+			else: open_station(n.res)
 
 func _process(_dt):
 	hud.queue_redraw()
@@ -153,22 +171,36 @@ func close_window():
 func dark(l: Label) -> Label:
 	l.add_theme_color_override("font_color", Color(0.2, 0.12, 0.05)); return l
 
-func open_inventory():
-	var vb := new_window("Mochila")
+func tab_bar(vb: VBoxContainer, cur: String):
 	var hb := HBoxContainer.new(); vb.add_child(hb)
-	var left := VBoxContainer.new(); left.custom_minimum_size = Vector2(320, 0); hb.add_child(left)
-	stats_label = dark(Label.new()); left.add_child(stats_label)
-	var right := VBoxContainer.new(); hb.add_child(right)
-	var grid := GridContainer.new(); grid.columns = 7; right.add_child(grid)
+	for t in [["mochila", "Mochila"], ["equipo", "Equipo"], ["habil", "Habilidades"], ["misiones", "Misiones"], ["mapa", "Mapa"]]:
+		var b := Button.new(); b.text = t[1]; b.disabled = (t[0] == cur); b.pressed.connect(open_menu.bind(t[0])); hb.add_child(b)
+
+func open_menu(tab: String):
+	var vb := new_window("Menu")
+	tab_bar(vb, tab)
+	match tab:
+		"mochila": _tab_bag(vb)
+		"equipo": _tab_equip(vb)
+		"habil": _tab_skills(vb)
+		"misiones": _tab_quests(vb)
+		"mapa": _tab_map(vb)
+
+func slot_btn(id: String) -> Button:
+	var b := Button.new(); b.custom_minimum_size = Vector2(76, 76); b.expand_icon = true
+	b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER; b.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
+	if id != "": b.icon = icon_tex(int(Game.ITEMS[id]["icon"]))
+	return b
+
+# ---- mochila ----
+func _tab_bag(vb: VBoxContainer):
+	var grid := GridContainer.new(); grid.columns = 7; vb.add_child(grid)
 	inv_buttons.clear()
 	for i in Game.INV_SIZE:
-		var b := Button.new(); b.custom_minimum_size = Vector2(76, 76); b.expand_icon = true
-		b.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER; b.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-		b.pressed.connect(_select.bind(i)); grid.add_child(b); inv_buttons.append(b)
-	info_label = dark(Label.new()); info_label.custom_minimum_size = Vector2(0, 36); right.add_child(info_label)
-	var row := HBoxContainer.new(); right.add_child(row)
-	var use := Button.new(); use.text = "Usar / Equipar"; use.pressed.connect(_use_selected); row.add_child(use)
-	var drop := Button.new(); drop.text = "Tirar"; drop.pressed.connect(_drop_selected); row.add_child(drop)
+		var b := slot_btn(""); b.pressed.connect(_select.bind(i)); grid.add_child(b); inv_buttons.append(b)
+	info_label = dark(Label.new()); info_label.custom_minimum_size = Vector2(0, 36); vb.add_child(info_label)
+	var row := HBoxContainer.new(); vb.add_child(row)
+	_btn(row, "Usar / Equipar", _use_selected); _btn(row, "Tirar", _drop_selected)
 	sel = -1; _refresh_inv()
 
 func _refresh_inv():
@@ -176,16 +208,11 @@ func _refresh_inv():
 		var id: String = Game.inventory[i]
 		var b: Button = inv_buttons[i]
 		b.icon = icon_tex(int(Game.ITEMS[id]["icon"])) if id != "" else null
-		b.text = "E" if id != "" and (id == Game.weapon or id == Game.armor) else ""
 		b.modulate = Color(1, 1, 0.5) if i == sel else Color.WHITE
-	stats_label.text = "Nivel %d\nVida %d/%d\nAtaque %d\nDefensa %d\nOro %d\nArma: %s\nArmadura: %s\nEnemigos: %d" % [
-		Game.level, Game.hp, Game.max_hp(), Game.attack_power(), Game.defense(), Game.gold,
-		Game.ITEMS[Game.weapon]["name"] if Game.weapon != "" else "-",
-		Game.ITEMS[Game.armor]["name"] if Game.armor != "" else "-", Game.kills]
 	if sel >= 0 and Game.inventory[sel] != "":
 		var it = Game.ITEMS[Game.inventory[sel]]
-		info_label.text = "%s - %s" % [it["name"], it["desc"]]
-	else: info_label.text = ""
+		info_label.text = "%s - %s (vale %d)" % [it["name"], it["desc"], it["price"]]
+	else: info_label.text = "Toca un objeto"
 
 func _select(i: int):
 	sel = i; _refresh_inv()
@@ -196,22 +223,46 @@ func _use_selected():
 	if id == "": return
 	var it = Game.ITEMS[id]
 	match it["type"]:
-		"weapon": Game.weapon = id
-		"armor": Game.armor = id
+		"equip": Game.equip_item(sel)
 		"potion":
 			Game.hp = min(Game.max_hp(), Game.hp + float(it["heal"])); Game.inventory[sel] = ""
 	_refresh_inv()
 
 func _drop_selected():
-	if sel < 0 or Game.inventory[sel] == "": return
-	var id: String = Game.inventory[sel]
-	if id == Game.weapon: Game.weapon = ""
-	if id == Game.armor: Game.armor = ""
-	Game.inventory[sel] = ""
-	_refresh_inv()
+	if sel < 0: return
+	Game.inventory[sel] = ""; _refresh_inv()
 
-func open_quests():
-	var vb := new_window("Misiones")
+# ---- equipo y estadisticas ----
+func _tab_equip(vb: VBoxContainer):
+	var hb := HBoxContainer.new(); vb.add_child(hb)
+	var left := VBoxContainer.new(); hb.add_child(left)
+	for s in Game.SLOTS:
+		var row := HBoxContainer.new(); left.add_child(row)
+		var b := slot_btn(Game.equip[s]); b.pressed.connect(func(): Game.unequip(s); open_menu("equipo")); row.add_child(b)
+		var l := dark(Label.new()); l.custom_minimum_size = Vector2(250, 0)
+		l.text = "%s: %s" % [Game.SLOT_NAMES[s], Game.ITEMS[Game.equip[s]]["name"] if Game.equip[s] != "" else "-"]
+		row.add_child(l)
+	var right := VBoxContainer.new(); right.custom_minimum_size = Vector2(300, 0); hb.add_child(right)
+	var st := dark(Label.new())
+	st.text = "Nivel %d\nVida %d/%d\nAtaque %d\nDefensa %d\nOro %d\nEnemigos: %d\n\nPuntos libres: %d" % [Game.level, Game.hp, Game.max_hp(), Game.attack_power(), Game.defense(), Game.gold, Game.kills, Game.free_points()]
+	right.add_child(st)
+	for k in [["hp", "+ Vida (+10)"], ["def", "+ Defensa (+1)"], ["atk", "+ Ataque (+2)"]]:
+		var b := Button.new(); b.text = "%s [%d]" % [k[1], Game.stat_pts[k[0]]]; b.disabled = Game.free_points() <= 0
+		b.pressed.connect(func(): Game.stat_pts[k[0]] += 1; open_menu("equipo")); right.add_child(b)
+	var h := dark(Label.new()); h.text = "Toca una pieza para quitarla"; vb.add_child(h)
+
+# ---- habilidades ----
+func _tab_skills(vb: VBoxContainer):
+	for s in Game.SKILL_IDS:
+		var lv := Game.skill_level(s)
+		var a: int = int(Game.skill_xp[s]) - Game.skill_floor(lv); var n: int = Game.skill_floor(lv + 1) - Game.skill_floor(lv)
+		var row := HBoxContainer.new(); vb.add_child(row)
+		var l := dark(Label.new()); l.custom_minimum_size = Vector2(300, 0); l.text = "%s  Nv %d" % [Game.SKILL_NAMES[s], lv]; row.add_child(l)
+		var pb := ProgressBar.new(); pb.custom_minimum_size = Vector2(300, 28); pb.max_value = n; pb.value = a; pb.show_percentage = false; row.add_child(pb)
+	var h := dark(Label.new()); h.text = "Mina menas, tala arboles, pesca en el agua.\nFunde en la fragua, forja en el yunque, cocina en la fogata."; vb.add_child(h)
+
+# ---- misiones ----
+func _tab_quests(vb: VBoxContainer):
 	var any := false
 	for id in Game.quests:
 		any = true
@@ -222,19 +273,88 @@ func open_quests():
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD; l.custom_minimum_size = Vector2(620, 0)
 		vb.add_child(l)
 	if not any:
-		var l := dark(Label.new()); l.text = "Habla con los aldeanos del pueblo (los que tienen !)"; vb.add_child(l)
+		var l := dark(Label.new()); l.text = "Habla con los aldeanos del pueblo."; vb.add_child(l)
 
+# ---- mapa ----
+func _tab_map(vb: VBoxContainer):
+	var sc := 3
+	var img: Image = world.terrain_img.duplicate()
+	img.resize(world.W * sc, world.H * sc, Image.INTERPOLATE_NEAREST)
+	var mark := func(cell: Vector2, c: Color, r: int):
+		var cx := int(cell.x) * sc; var cy := int(cell.y) * sc
+		for dy in range(-r, r + 1):
+			for dx in range(-r, r + 1):
+				var x := cx + dx; var y := cy + dy
+				if x >= 0 and y >= 0 and x < img.get_width() and y < img.get_height(): img.set_pixel(x, y, c)
+	for a in world.acts:
+		var cell := Vector2(floor(a.position.x / world.T), floor(a.position.y / world.T))
+		if a.kind == "npc": mark.call(cell, Color(1, 0.9, 0.1), 3)
+		elif a.kind == "station": mark.call(cell, Color(1, 0.5, 0.1), 3)
+		elif a.res == "arbol": continue
+		elif a.res == "pez" or a.res == "trucha": mark.call(cell, Color(0.7, 1, 1), 1)
+		else: mark.call(cell, Color(0.1, 0.1, 0.1), 2)
+	mark.call(world.player.position / world.T, Color(1, 0, 0), 5)
+	var tr := TextureRect.new(); tr.texture = ImageTexture.create_from_image(img)
+	tr.custom_minimum_size = Vector2(440, 440); tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE; tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	tr.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST; vb.add_child(tr)
+	var h := dark(Label.new()); h.text = "Rojo: tu. Amarillo: aldeanos. Naranja: fragua/yunque/fogata/banco. Negro: minas. Celeste: pesca."; vb.add_child(h)
+
+# ---------------- estaciones ----------------
+func open_station(st: String):
+	var R = Game.RECIPES[st]
+	var vb := new_window("%s  (%s Nv %d)" % [R["title"], Game.SKILL_NAMES[R["skill"]], Game.skill_level(R["skill"])])
+	var sc := ScrollContainer.new(); sc.custom_minimum_size = Vector2(700, 420); vb.add_child(sc)
+	var lst := VBoxContainer.new(); sc.add_child(lst)
+	for r in R["list"]:
+		var need := ""; var ok: bool = Game.skill_level(R["skill"]) >= int(r["lvl"])
+		for k in r["need"]:
+			need += " %s %d/%d" % [Game.ITEMS[k]["name"], min(Game.count_item(k), int(r["need"][k])), r["need"][k]]
+			if Game.count_item(k) < int(r["need"][k]): ok = false
+		var b := Button.new(); b.alignment = HORIZONTAL_ALIGNMENT_LEFT; b.disabled = not ok
+		b.text = "%s (Nv%d) <-%s" % [Game.ITEMS[r["out"]]["name"], r["lvl"], need]
+		b.pressed.connect(_craft.bind(st, r)); lst.add_child(b)
+
+func _craft(st: String, r: Dictionary):
+	var R = Game.RECIPES[st]
+	for k in r["need"]: Game.remove_items(k, int(r["need"][k]))
+	if not Game.add_item(r["out"]): Game.add_item(r["need"].keys()[0]); return
+	if Game.add_skill_xp(R["skill"], int(r["xp"])): world.popup("¡%s nivel %d!" % [Game.SKILL_NAMES[R["skill"]], Game.skill_level(R["skill"])], world.player.position, Color(0.5, 1, 1))
+	open_station(st)
+
+# ---------------- banco ----------------
+func open_bank():
+	var vb := new_window("Banco (toca para mover)")
+	var h := dark(Label.new()); h.text = "Banco"; vb.add_child(h)
+	var g1 := GridContainer.new(); g1.columns = 10; vb.add_child(g1)
+	for i in Game.BANK_SIZE:
+		var b := slot_btn(Game.bank[i]); b.custom_minimum_size = Vector2(56, 56)
+		b.pressed.connect(func():
+			var id: String = Game.bank[i]
+			if id != "" and Game.add_item(id): Game.bank[i] = ""
+			open_bank()); g1.add_child(b)
+	var h2 := dark(Label.new()); h2.text = "Mochila"; vb.add_child(h2)
+	var g2 := GridContainer.new(); g2.columns = 10; vb.add_child(g2)
+	for i in Game.INV_SIZE:
+		var b := slot_btn(Game.inventory[i]); b.custom_minimum_size = Vector2(56, 56)
+		b.pressed.connect(func():
+			var id: String = Game.inventory[i]
+			var j: int = Game.bank.find("")
+			if id != "" and j != -1: Game.bank[j] = id; Game.inventory[i] = ""
+			open_bank()); g2.add_child(b)
+
+# ---------------- dialogo y comercio ----------------
 const SHOP := {
-	"Bayu": ["espada_hierro", "armadura_hierro"],
-	"Mara": ["pocion", "carne", "armadura_cuero"],
-	"Toro": ["hacha", "baston", "pocion"],
+	"Bayu": ["espada_cobre", "casco_cobre", "peto_cobre", "pocion"],
+	"Mara": ["pocion", "carne", "pez_asado"],
+	"Toro": ["grebas_cobre", "botas_cobre", "espada_hierro"],
+	"Gael": ["pocion", "anillo_vida", "anillo_fuerza", "peto_hierro", "casco_hierro", "grebas_hierro", "botas_hierro"],
 }
 
 func open_dialog(npc: String):
 	var vb := new_window(npc)
 	var l := dark(Label.new()); l.autowrap_mode = TextServer.AUTOWRAP_WORD; l.custom_minimum_size = Vector2(620, 0)
 	vb.add_child(l)
-	var text := "Buen dia, viajero."
+	var text := "Buen dia, viajero." if npc != "Gael" else "Compro y vendo de todo. Los minerales y el pescado se pagan bien."
 	for id in Game.QUESTS:
 		var q = Game.QUESTS[id]
 		if q["giver"] != npc: continue
@@ -243,13 +363,26 @@ func open_dialog(npc: String):
 			_btn(vb, "Entregar mision", _turn_in.bind(id, npc))
 		elif Game.quests.has(id) and Game.quests[id]["state"] == "active":
 			text = "%s (%d/%d)" % [q["text"], Game.quest_progress(id), q["need"]]
-		elif not Game.quests.has(id) and (not q.has("after") or (Game.quests.has(q["after"]) and Game.quests[q["after"]]["state"] == "done")):
+		elif Game.quest_available(id):
 			text = q["text"]
 			_btn(vb, "Aceptar: " + q["title"], _accept.bind(id, npc))
-	l.text = text
+	l.text = text + "\nOro: %d" % Game.gold
 	for id in SHOP.get(npc, []):
 		var it = Game.ITEMS[id]
 		_btn(vb, "Comprar %s (%d oro)" % [it["name"], it["price"]], _buy.bind(id, npc))
+	_btn(vb, "Vender objetos...", open_sell.bind(npc))
+
+func open_sell(npc: String):
+	var vb := new_window("Vender a " + npc)
+	var h := dark(Label.new()); h.text = "Oro: %d  (toca para vender a mitad de precio)" % Game.gold; vb.add_child(h)
+	var g := GridContainer.new(); g.columns = 7; vb.add_child(g)
+	for i in Game.INV_SIZE:
+		var b := slot_btn(Game.inventory[i])
+		b.pressed.connect(func():
+			var id: String = Game.inventory[i]
+			if id != "": Game.gold += int(Game.ITEMS[id]["price"]) / 2; Game.inventory[i] = ""
+			open_sell(npc)); g.add_child(b)
+	_btn(vb, "Volver", open_dialog.bind(npc))
 
 func _btn(vb: Control, t: String, cb: Callable):
 	var b := Button.new(); b.text = t; b.pressed.connect(cb); vb.add_child(b)

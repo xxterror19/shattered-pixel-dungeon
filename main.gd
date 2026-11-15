@@ -14,6 +14,12 @@ var mobs: Array = []
 var npcs: Array = []
 var ui
 var tex := {}
+var acts: Array = []          # objetos interactivos: npcs, recursos, estaciones
+var terrain_img: Image
+var tiles := PackedByteArray()
+var ore_cells: Array = []
+var fish_cells: Array = []
+var tree_nodes: Array = []
 var save_t := 0.0
 
 func tx(n: String) -> Texture2D:
@@ -34,13 +40,19 @@ func _ready():
 	var cam := Camera2D.new(); cam.zoom = Vector2(3, 3)
 	cam.limit_left = 0; cam.limit_top = 0; cam.limit_right = W * T; cam.limit_bottom = H * T
 	player.add_child(cam)
-	for n in [["Bayu", Vector2i(3, -2)], ["Mara", Vector2i(-4, -2)], ["Toro", Vector2i(1, 4)]]:
+	for n in [["Bayu", Vector2i(3, -2)], ["Mara", Vector2i(-4, -2)], ["Toro", Vector2i(1, 4)], ["Gael", Vector2i(-2, 5)]]:
 		var npc := Node2D.new(); npc.set_script(preload("res://npc.gd")); ents.add_child(npc)
 		npc.setup(self, n[0])
 		var tp: Vector2i = CENTER + n[1]
 		npc.position = Vector2(tp.x * T + 8, tp.y * T + 8)
 		blocked[tp.y * W + tp.x] = 1
-		npcs.append(npc)
+		npcs.append(npc); acts.append(npc)
+	for st in [["fragua", Vector2i(-7, 0)], ["yunque", Vector2i(-7, 2)], ["fogata", Vector2i(6, -4)], ["banco", Vector2i(5, 2)]]:
+		var tp: Vector2i = CENTER + st[1]
+		_make_node(st[0], true, Vector2(tp.x * T + 8, tp.y * T + 8)); blocked[tp.y * W + tp.x] = 1
+	for c in ore_cells: _make_node(c[0], false, Vector2(c[1] * T + 8, c[2] * T + 8))
+	for c in fish_cells: _make_node(c[0], false, Vector2(c[1] * T + 8, c[2] * T + 8))
+	for c in tree_nodes: _make_node("arbol", false, Vector2(c[0] * T + 8, c[1] * T + 8))
 	ui = CanvasLayer.new(); ui.set_script(preload("res://ui.gd")); add_child(ui)
 	ui.setup(self)
 
@@ -55,6 +67,9 @@ func _build_world() -> Array:
 	ts.add_source(src, 0)
 	layer = TileMapLayer.new(); layer.tile_set = ts; add_child(layer)
 	objs = []
+	tiles.resize(W * H)
+	terrain_img = Image.create(W, H, false, Image.FORMAT_RGB8)
+	var MAPC := [Color(0.38, 0.66, 0.27), Color(0.45, 0.72, 0.3), Color(0.62, 0.47, 0.3), Color(0.2, 0.47, 0.82), Color(0.5, 0.49, 0.52), Color(0.27, 0.55, 0.24)]
 	for y in H:
 		for x in W:
 			var d := Vector2(x - CENTER.x, y - CENTER.y).length()
@@ -71,11 +86,17 @@ func _build_world() -> Array:
 			elif h > 0.34 and d > 40:
 				t = 4
 				if rng.randf() < 0.09: objs.append(["rock", x, y]); blocked[y * W + x] = 1
+				elif rng.randf() < 0.03:
+					var oc := "cobre" if d < 60 else ("hierro" if d < 90 else "lunar")
+					if rng.randf() < 0.35: oc = "carbon" if d < 85 else "hierro"
+					ore_cells.append([oc, x, y]); blocked[y * W + x] = 1
 				elif rng.randf() < 0.012: spawns.append(["skeleton", x, y])
 			else:
 				t = 5 if f > 0.15 else (1 if rng.randf() < 0.06 else 0)
 				if rng.randf() < (0.16 if f > 0.15 else 0.04):
-					objs.append(["tree", x, y]); blocked[y * W + x] = 1
+					if rng.randf() < 0.2: tree_nodes.append([x, y])
+					else: objs.append(["tree", x, y])
+					blocked[y * W + x] = 1
 				elif rng.randf() < 0.012:
 					spawns.append(["slime" if d < 55 or rng.randf() < 0.6 else "vulture", x, y])
 				elif d > 35 and rng.randf() < 0.004:
@@ -83,6 +104,21 @@ func _build_world() -> Array:
 				elif rng.randf() < 0.01 and d > 12:
 					objs.append(["rock", x, y]); blocked[y * W + x] = 1
 			layer.set_cell(Vector2i(x, y), 0, Vector2i(t, 0))
+			terrain_img.set_pixel(x, y, MAPC[t]); tiles[y * W + x] = t
+	# puntos de pesca: agua con tierra libre al lado
+	var cands: Array = []
+	for y in range(3, H - 3):
+		for x in range(3, W - 3):
+			if tiles[y * W + x] == 3 and blocked[y * W + x] == 1:
+				for dd in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+					var nx: int = x + dd.x; var ny: int = y + dd.y
+					if blocked[ny * W + nx] == 0 and Vector2(x - CENTER.x, y - CENTER.y).length() > 12:
+						cands.append([x, y]); break
+	for i in range(cands.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i); var tmp = cands[i]; cands[i] = cands[j]; cands[j] = tmp
+	for i in min(60, cands.size()):
+		var c: Array = cands[i]
+		fish_cells.append(["trucha" if Vector2(c[0] - CENTER.x, c[1] - CENTER.y).length() > 55 else "pez", c[0], c[1]])
 	return spawns
 
 var objs: Array = []
@@ -96,6 +132,11 @@ func _build_objects(spawns: Array):
 		ents.add_child(s)
 	for sp in spawns:
 		spawn_mob(sp[0], Vector2(sp[1] * T + 8, sp[2] * T + 8))
+
+func _make_node(res: String, station: bool, p: Vector2):
+	var n := Node2D.new(); n.set_script(preload("res://node.gd")); ents.add_child(n)
+	n.setup(self, res, station); n.position = p
+	acts.append(n)
 
 func spawn_mob(kind: String, p: Vector2):
 	var m := Node2D.new(); m.set_script(preload("res://mob.gd")); ents.add_child(m)

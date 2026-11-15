@@ -11,6 +11,8 @@ var dash_dir := Vector2.DOWN
 var dash_hit := []
 var t := 0.0
 var dead := false
+var gnode = null
+var gt := 0.0
 
 const DIRS := [Vector2.DOWN, Vector2.UP, Vector2.LEFT, Vector2.RIGHT]
 
@@ -23,6 +25,7 @@ func speed() -> float:
 
 func _process(dt):
 	t += dt
+	_gather(dt)
 	atk_cd = max(0.0, atk_cd - dt)
 	for k in cds: cds[k] = max(0.0, cds[k] - dt)
 	sprite.texture = world.tx("horse" if Game.mounted else "hero")
@@ -87,3 +90,29 @@ func die():
 	await get_tree().create_timer(1.5).timeout
 	position = Vector2(world.CENTER.x * world.T, world.CENTER.y * world.T + 40)
 	Game.hp = Game.max_hp(); Game.mounted = false; dead = false
+
+# ---------------- recoleccion ----------------
+func start_gather(n):
+	var d = Game.NODES[n.res]
+	if Game.skill_level(d["skill"]) < int(d["lvl"]):
+		world.popup("Necesitas %s nivel %d" % [Game.SKILL_NAMES[d["skill"]], d["lvl"]], position, Color(1, 0.5, 0.4)); return
+	if n.depleted: world.popup("Agotado...", position, Color(0.8, 0.8, 0.8)); return
+	gnode = n; gt = 0.0
+
+func cancel_gather(): gnode = null
+
+func _gather(dt):
+	if gnode == null: return
+	if dead or not is_instance_valid(gnode) or gnode.depleted or move_vec.length() > 0.25 or gnode.position.distance_to(position) > 34.0:
+		gnode = null; return
+	gt += dt
+	var d = Game.NODES[gnode.res]
+	if gt >= float(d["time"]):
+		gt = 0.0
+		if not Game.add_item(d["item"]):
+			world.popup("Mochila llena", position, Color(1, 0.5, 0.4)); gnode = null; return
+		var up: bool = Game.add_skill_xp(d["skill"], int(d["xp"]))
+		world.popup("+%s" % Game.ITEMS[d["item"]]["name"], position, Color(0.8, 1, 0.8))
+		if up: world.popup("¡%s nivel %d!" % [Game.SKILL_NAMES[d["skill"]], Game.skill_level(d["skill"])], position + Vector2(0, -10), Color(0.5, 1, 1))
+		gnode.deplete()
+		if gnode.depleted: gnode = null
