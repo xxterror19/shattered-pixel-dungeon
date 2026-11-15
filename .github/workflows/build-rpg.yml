@@ -38,14 +38,12 @@ jobs:
             echo "export/android/debug_keystore = \"$GITHUB_WORKSPACE/debug.keystore\""
             echo 'export/android/debug_keystore_user = "androiddebugkey"'
             echo 'export/android/debug_keystore_pass = "android"'
-          } > ~/.config/godot/editor_settings-4.tres
+          } > ~/.config/godot/editor_settings-4.3.tres
       - name: Exportar APK
         run: |
           mkdir -p build
-          ls ~/.local/share/godot/export_templates/4.3.stable | head -30
-          ls ~/.config/godot; cat ~/.config/godot/editor_settings-4.tres; echo ANDROID_HOME=$ANDROID_HOME; ls $ANDROID_HOME $ANDROID_HOME/build-tools
           ./godot --headless --import || true
-          ./godot --headless --verbose --export-debug "Android" build/aldea-ceniza.apk
+          ./godot --headless --export-debug "Android" build/aldea-ceniza.apk
           ls -la build
       - uses: actions/upload-artifact@v4
         with:
