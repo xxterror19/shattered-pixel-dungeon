@@ -36,7 +36,7 @@ jobs:
             echo "export/android/debug_keystore = \"$GITHUB_WORKSPACE/debug.keystore\""
             echo 'export/android/debug_keystore_user = "androiddebugkey"'
             echo 'export/android/debug_keystore_pass = "android"'
-          } > ~/.config/godot/editor_settings-4.3.tres
+          } > ~/.config/godot/editor_settings-4.tres
       - name: Exportar APK
         run: |
           mkdir -p build
