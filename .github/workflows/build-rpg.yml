@@ -23,15 +23,17 @@ jobs:
           unzip -q tpl.tpz -d tpl && mv tpl/templates/* ~/.local/share/godot/export_templates/4.3.stable/
       - name: Android SDK
         run: |
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null || true
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;34.0.0" "platforms;android-34" "platform-tools" >/dev/null
+          S=$HOME/asdk
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$S --licenses >/dev/null || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --sdk_root=$S "cmdline-tools;latest" "platform-tools" "build-tools;34.0.0" "platforms;android-34" >/dev/null
+          ls $S $S/cmdline-tools $S/cmdline-tools/latest/bin
       - name: Configurar editor
         run: |
           mkdir -p ~/.config/godot
           {
             echo '[gd_resource type="EditorSettings" format=3]'
             echo '[resource]'
-            echo "export/android/android_sdk_path = \"$ANDROID_HOME\""
+            echo "export/android/android_sdk_path = \"$HOME/asdk\""
             echo "export/android/java_sdk_path = \"$JAVA_HOME\""
             echo "export/android/debug_keystore = \"$GITHUB_WORKSPACE/debug.keystore\""
             echo 'export/android/debug_keystore_user = "androiddebugkey"'
